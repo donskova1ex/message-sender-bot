@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"new-client-notification-bot/internal/domain"
+	"message-sender-bot/internal/domain"
 	"testing"
 )
 

@@ -3,8 +3,8 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"new-client-notification-bot/internal/domain"
-	"new-client-notification-bot/internal/services"
+	"message-sender-bot/internal/domain"
+	"message-sender-bot/internal/services"
 	"regexp"
 	"strings"
 

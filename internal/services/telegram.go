@@ -2,8 +2,8 @@ package services
 
 import (
 	"context"
+	"message-sender-bot/config"
 	"net/http"
-	"new-client-notification-bot/config"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"

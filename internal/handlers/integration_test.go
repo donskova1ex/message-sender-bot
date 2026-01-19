@@ -5,9 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"message-sender-bot/internal/domain"
 	"net/http"
 	"net/http/httptest"
-	"new-client-notification-bot/internal/domain"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"

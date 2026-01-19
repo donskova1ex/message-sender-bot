@@ -1,76 +1,54 @@
+// cmd/app/main.go
 package main
 
 import (
-	"errors"
+	"context"
 	"message-sender-bot/config"
-	"message-sender-bot/internal/handlers"
+	"message-sender-bot/internal/app"
+	"message-sender-bot/internal/repository"
 	"message-sender-bot/internal/services"
+	"message-sender-bot/pkg/db"
 	"message-sender-bot/pkg/logger"
-	"net/http"
-	"os"
 	"os/signal"
-	"time"
-
-	"github.com/gofiber/contrib/fiberzerolog"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	"syscall"
 )
 
 func main() {
 	config.Init()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	logCfg := config.NewLogConfig()
-
 	customLogger := logger.NewLogger(logCfg)
-	cfg, err := config.NewBotConfig()
+
+	botCfg, err := config.NewBotConfig()
 	if err != nil {
 		customLogger.Fatal().Err(err).Msg("Failed to load bot config")
 	}
-
-	telegramBotService, err := services.NewTelegramBotService(cfg, customLogger)
+	tgBotSvc, err := services.NewTelegramBotService(botCfg, customLogger)
 	if err != nil {
-		customLogger.Fatal().Err(err).Msg("failed to create telegram bot service")
+		customLogger.Fatal().Err(err).Msg("Failed to create telegram bot service")
 	}
 
-	app := fiber.New()
-	app.Use(fiberzerolog.New(fiberzerolog.Config{
-		Logger: customLogger,
-	}))
-	app.Use(recover.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowMethods: "POST",
-	}))
-	app.Use(limiter.New(limiter.Config{
-		Max:        10,
-		Expiration: 60 * time.Second,
-		KeyGenerator: func(c *fiber.Ctx) string {
-			return c.IP()
-		},
-		LimitReached: func(c *fiber.Ctx) error {
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"success": false,
-				"message": "too many requests",
-			})
-		},
-	}))
-
-	handlers.NewNotificationHandler(app, telegramBotService, customLogger)
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		if err := app.Listen(":3000"); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			customLogger.Fatal().Err(err).Msg("failed to listen")
-		}
-	}()
-
-	<-c
-	customLogger.Info().Msg("shutting down")
-	if err := app.Shutdown(); err != nil {
-		customLogger.Fatal().Err(err).Msg("failed to shutdown")
+	dbCfg := config.NewDBConfig()
+	if dbCfg.PG_DSN == "" {
+		customLogger.Fatal().Msg("Postgres connection string is empty. Please set PG_DSN environment variable")
 	}
+	dbPool, err := db.CreateDBPool(ctx, dbCfg)
+	if err != nil {
+		customLogger.Fatal().Err(err).Msg("Failed to create database pool")
+	}
+	defer dbPool.Close()
 
+	authCfg, err := config.NewAuthConfig()
+	if err != nil {
+		customLogger.Fatal().Err(err).Msg("Failed to load auth config")
+	}
+	jwtSvc := services.NewJWTService([]byte(authCfg.Secret), authCfg.Exp)
+	userRepo := repository.NewUserRepository(dbPool)
+	authSvc := services.NewAuthService(userRepo, jwtSvc, customLogger)
+
+	// === Запуск сервера ===
+	go app.Run(ctx, tgBotSvc, authSvc, jwtSvc, customLogger)
+	<-ctx.Done()
 }

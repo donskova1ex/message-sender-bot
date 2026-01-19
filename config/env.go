@@ -2,9 +2,11 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -17,6 +19,15 @@ type BotConfig struct {
 type LogConfig struct {
 	Level  int
 	Format string
+}
+
+type PGConfig struct {
+	PG_DSN string
+}
+
+type AuthConfig struct {
+	Secret string
+	Exp    time.Duration
 }
 
 func Init() {
@@ -61,9 +72,32 @@ func NewBotConfig() (*BotConfig, error) {
 	}, nil
 }
 
+func NewAuthConfig() (*AuthConfig, error) {
+	secret := getString("JWT_SECRET", "")
+	if secret == "" {
+		return nil, errors.New("secret required")
+	}
+	expiry := getString("JWT_EXPRY", "24h")
+	actualExpiry, err := time.ParseDuration(expiry)
+	if err != nil {
+		return nil, fmt.Errorf("invalid expiry: %w", err)
+	}
+	
+	return &AuthConfig{
+		Secret: secret,
+		Exp: actualExpiry,
+	}, nil
+}
+
 func NewLogConfig() *LogConfig {
 	return &LogConfig{
 		Level:  getInt("LOG_LEVEL", 0),
 		Format: getString("LOG_FORMAT", "json"),
+	}
+}
+
+func NewDBConfig() *PGConfig {
+	return &PGConfig{
+		PG_DSN: os.Getenv("PG_DSN"),
 	}
 }

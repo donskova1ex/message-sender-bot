@@ -48,7 +48,6 @@ func main() {
 	userRepo := repository.NewUserRepository(dbPool)
 	authSvc := services.NewAuthService(userRepo, jwtSvc, customLogger)
 
-	// === Запуск сервера ===
 	go app.Run(ctx, tgBotSvc, authSvc, jwtSvc, customLogger)
 	<-ctx.Done()
 }

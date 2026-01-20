@@ -22,8 +22,8 @@ type loginRequest struct {
 
 func NewAuthHandler(app *fiber.App, authSvc *services.AuthService, logger *zerolog.Logger) {
 	h := &AuthHandler{authSvc: authSvc, logger: logger}
-	app.Post("/api/auth/register", h.Register)
-	app.Post("/api/auth/login", h.Login)
+	app.Post("/api/v1/auth/register", h.Register)
+	app.Post("/api/v1/auth/login", h.Login)
 }
 
 type registerRequest struct {

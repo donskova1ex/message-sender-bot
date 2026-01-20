@@ -1,15 +1,55 @@
+<script>
+    import { goto } from "$app/navigation";
+    import HealthIndicator from "$lib/components/HealthIndicator.svelte";
+    let email = '';
+    let password = '';
+    let loading = false;
+    let error = false;
+
+    async function handleSubmit() {
+        if (loading) return;
+
+        loading = true;
+        error = false;
+
+        try {
+            const res = await fetch('http://localhost:3000/api/v1/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({email, password})
+            });
+            
+            if (res.ok) {
+                await goto('/planner');
+            } else {
+                error = true;
+            }
+        } catch (err) {
+            error = true;
+        } finally {
+            loading = false;
+        }
+    }
+</script>
+
 <div class="login-card">
     <div class="login-header">
         <h1>Панель планирования отправок</h1>
         <p>Войдите, чтобы начать работу</p>
     </div>
-    <div id="error" class="error-message">Неверный логин или пароль</div>
-    <form id="login-form">
+    {#if error}
+        <div id="error" class="error-message">Неверный логин или пароль</div>
+    {/if}
+    
+    <form on:submit|preventDefault={handleSubmit}>
         <div class="form-group">
             <label for="email">Email</label>
             <input
                 type="email"
                 id="email"
+                bind:value={email}
                 name="email"
                 class="form-control"
                 required
@@ -20,19 +60,18 @@
             <input
                 type="password"
                 id="password"
+                bind:value={password}
                 name="password"
                 class="form-control"
                 required
             />
         </div>
-        <button type="submit" class="btn">Войти</button>
+        <button type="submit" class="btn" disabled={loading}>
+            {loading ? 'Вход...': 'Войти'}
+        </button>
     </form>
 </div>
-<script>
-    import HealthIndicator from "$lib/components/HealthIndicator.svelte";
-</script>
 <HealthIndicator/>
-
 <style>
     .login-card {
         width: 100%;
@@ -108,8 +147,5 @@
         color: var(--danger);
         font-size: 0.9rem;
         margin-bottom: 16px;
-    }
-    .error-message.show {
-        display: block;
     }
 </style>

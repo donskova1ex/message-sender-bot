@@ -25,11 +25,11 @@ func NewAuthHandler(
     authSvc *services.AuthService,
     logger *zerolog.Logger,
 ) *AuthHandler {
-    h := &AuthHandler{authSvc: authSvc, logger: logger}
+    handler := &AuthHandler{authSvc: authSvc, logger: logger}
     authGroup := router.Group("/api/v1/auth")
-    authGroup.Post("/register", h.Register)
-    authGroup.Post("/login", h.Login)
-    return h
+    authGroup.Post("/register", handler.Register)
+    authGroup.Post("/login", handler.Login)
+    return handler
 }
 
 type registerRequest struct {

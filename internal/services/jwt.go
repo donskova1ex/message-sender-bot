@@ -33,13 +33,7 @@ func (j *JWTService) GenerateToken(userID int64) (string, error) {
 			IssuedAt: jwt.NewNumericDate(time.Now()),
 		},
 	}
-	if claims == nil {
-		return "", errors.New("failed to generate claims")
-	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	if token == nil {
-		return "", errors.New("failed to generate token")
-	}
 	return token.SignedString(j.secret)
 }
 

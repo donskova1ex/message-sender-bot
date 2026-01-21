@@ -78,7 +78,7 @@ func (a *AuthService) Register(ctx context.Context, email, password string) (str
 func (a *AuthService) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := a.userRepository.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", err
+		return "", errors.New("invalid credentials")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {

@@ -1,4 +1,3 @@
-// internal/app/run.go
 package app
 
 import (
@@ -6,6 +5,7 @@ import (
 	"time"
 
 	"message-sender-bot/internal/handlers"
+	"message-sender-bot/internal/middleware"
 	"message-sender-bot/internal/services"
 
 	"github.com/gofiber/fiber/v2"
@@ -51,10 +51,10 @@ func newApp(
 	jwtSvc *services.JWTService,
 	logger *zerolog.Logger,
 ) *fiber.App {
-	ApplyMiddleware(app, logger)
+	middleware.ApplyMiddleware(app, logger)
 
 	handlers.NewAuthHandler(app, authSvc, logger)          
-	handlers.NewNotificationHandler(app, tgBotSvc, logger) 
+	handlers.NewNotificationHandler(app, tgBotSvc, middleware.JWTAuth(jwtSvc), logger) 
 
 
 	logger.Info().Msg("Handlers registered")

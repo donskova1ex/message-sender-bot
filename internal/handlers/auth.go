@@ -20,10 +20,16 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
-func NewAuthHandler(app *fiber.App, authSvc *services.AuthService, logger *zerolog.Logger) {
-	h := &AuthHandler{authSvc: authSvc, logger: logger}
-	app.Post("/api/v1/auth/register", h.Register)
-	app.Post("/api/v1/auth/login", h.Login)
+func NewAuthHandler(
+    router fiber.Router,
+    authSvc *services.AuthService,
+    logger *zerolog.Logger,
+) *AuthHandler {
+    h := &AuthHandler{authSvc: authSvc, logger: logger}
+    authGroup := router.Group("/api/v1/auth")
+    authGroup.Post("/register", h.Register)
+    authGroup.Post("/login", h.Login)
+    return h
 }
 
 type registerRequest struct {

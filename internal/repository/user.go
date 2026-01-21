@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -39,7 +39,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, email, password string)
 	user := &User{}
 	err = r.db.QueryRow(ctx, query, email, string(hash)).Scan(&user.ID, &user.Email, &user.PasswordHash)
 	if err != nil {
-		var pgErr *pq.Error
+		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			return nil, fmt.Errorf("user with email %s already exists", email)
 		}
@@ -60,7 +60,7 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*Use
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("user with email %s not found", email)
 		} 
-			return nil, fmt.Errorf("failed to get user by email: %w", err)
+		return nil, fmt.Errorf("failed to get user by email: %w", err)
 	}
 	return user, nil
 }

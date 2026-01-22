@@ -12,8 +12,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func Run(ctx context.Context, tgBotSvc *services.TelegramBotService, authSvc *services.AuthService, jwtSvc *services.JWTService, logger *zerolog.Logger) {
-	app := newApp(fiber.New(), tgBotSvc, authSvc, jwtSvc, logger)
+func Run(ctx context.Context, msgSvc *services.MessageService, authSvc *services.AuthService, jwtSvc *services.JWTService, logger *zerolog.Logger) {
+	app := newApp(fiber.New(), msgSvc, authSvc, jwtSvc, logger)
 	serverStarted := make(chan bool, 1)
 
 	app.Hooks().OnListen(
@@ -46,16 +46,15 @@ func Run(ctx context.Context, tgBotSvc *services.TelegramBotService, authSvc *se
 
 func newApp(
 	app *fiber.App,
-	tgBotSvc *services.TelegramBotService,
+	msgSvc *services.MessageService,
 	authSvc *services.AuthService,
 	jwtSvc *services.JWTService,
 	logger *zerolog.Logger,
 ) *fiber.App {
 	middleware.ApplyMiddleware(app, logger)
 
-	handlers.NewAuthHandler(app, authSvc, logger)          
-	handlers.NewNotificationHandler(app, tgBotSvc, middleware.JWTAuth(jwtSvc), logger) 
-
+	handlers.NewAuthHandler(app, authSvc, logger)
+	handlers.NewMessageHandler(app, msgSvc, middleware.JWTAuth(jwtSvc), logger)
 
 	logger.Info().Msg("Handlers registered")
 	return app

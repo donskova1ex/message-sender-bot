@@ -48,6 +48,9 @@ func main() {
 	userRepo := repository.NewUserRepository(dbPool)
 	authSvc := services.NewAuthService(userRepo, jwtSvc, customLogger)
 
-	go app.Run(ctx, tgBotSvc, authSvc, jwtSvc, customLogger)
+	msgRepo := repository.NewMessageRepository(dbPool)
+	msgSvc := services.NewMessageService(msgRepo, tgBotSvc, customLogger)
+
+	go app.Run(ctx, msgSvc, authSvc, jwtSvc, customLogger)
 	<-ctx.Done()
 }

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+	"message-sender-bot/internal/dto"
 	"message-sender-bot/internal/repository"
 
 	"github.com/rs/zerolog"
@@ -18,4 +20,8 @@ func NewMessageService(msgRepo *repository.MessageRepository, tgBotSvc TelegramB
 		tgBotSvc: tgBotSvc,
 		logger:   logger,
 	}
+}
+
+func (s *MessageService) ScheduleMessage(ctx context.Context, messageDto *dto.ScheduleMessageRequest, userId int64)  error {
+	return nil
 }

@@ -9,6 +9,10 @@ import (
 	"github.com/rs/zerolog"
 )
 
+const (
+	PAGE_ITEMS = 10
+)
+
 type MessageHandler struct {
 	router    fiber.Router
 	msgSvc    *services.MessageService
@@ -87,6 +91,24 @@ func (handler *MessageHandler) ScheduleMessage(c *fiber.Ctx) error {
 }
 
 func (handler *MessageHandler) UnsentMessages(c *fiber.Ctx) error {
-
-	return nil
+	page := c.QueryInt("page", 1)
+	unsentMessages, err := handler.msgSvc.GetUnsentMessages(c.Context(), PAGE_ITEMS, (page-1)*PAGE_ITEMS)
+	if err != nil {
+		handler.logger.Error().Err(err).Msg("failed to get unsent messages")
+		return c.Status(fiber.StatusBadRequest).JSON(
+			fiber.Map{
+				"code":  fiber.StatusBadRequest,
+				"error": "failed to get unsent messages",
+				"details": fiber.Map{
+					"error": err.Error(),
+				},
+			},
+		)
+	}
+	return c.Status(fiber.StatusCreated).JSON(
+		fiber.Map{
+			"status":  "ok",
+			"message": unsentMessages,
+		},
+	)
 }

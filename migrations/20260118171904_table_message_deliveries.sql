@@ -7,8 +7,9 @@ CREATE TABLE IF NOT EXISTS message_deliveries (
     is_sent BOOLEAN NOT NULL DEFAULT FALSE,
     sent_at TIMESTAMP,
     error TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_message_deliveries_unsent ON message_deliveries (message_id, chat_id) WHERE is_sent = false;
 CREATE INDEX IF NOT EXISTS idx_message_deliveries_chat_id ON message_deliveries (chat_id) WHERE deleted_at IS NULL;

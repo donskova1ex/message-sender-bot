@@ -38,17 +38,17 @@ func (r *MessageRepository) GetUnsentMessages(ctx context.Context, limit, offset
 			SELECT
 				m.id,
 				m.planned_date,
-				mt.name AS type_name,
+				mt.type_name,
 				m.text
 			FROM messages m
-			JOIN message_types mt ON m.type_id = mt.id
+					 JOIN message_types mt ON m.type_id = mt.id
 			WHERE m.deleted_at IS NULL
-			  AND EXISTS (
-			      SELECT 1
-			      FROM message_deliveries md
-			      WHERE md.message_id = m.id AND md.is_sent = false
-			  )
-			ORDER BY m.planned_date DESC
+			  AND NOT EXISTS (
+				SELECT 1
+				FROM message_deliveries md
+				WHERE md.message_id = m.id
+			)
+			ORDER BY m.planned_date ASC
 			LIMIT $1 OFFSET $2`
 	rows, err := r.dbPool.Query(ctx, query, limit, offset)
 	if err != nil {

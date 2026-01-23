@@ -28,6 +28,8 @@ func NewMessageHandler(router fiber.Router, msgSvc *services.MessageService, jwt
 
 	protected := api.Group("", jwtMiddleware)
 	protected.Get("/test", handler.Test)
+	protected.Post("/scheduled-messages", handler.ScheduleMessage)
+	protected.Get("/scheduled-messages", handler.UnsentMessages)
 	return handler
 
 }
@@ -55,7 +57,7 @@ func (handler *MessageHandler) ScheduleMessage(c *fiber.Ctx) error {
 		handler.logger.Error().Err(err).Msg("failed to parse schedule message request body")
 		return c.Status(fiber.StatusBadRequest).JSON(
 			fiber.Map{
-				"code": fiber.StatusBadRequest,
+				"code":  fiber.StatusBadRequest,
 				"error": "invalid request body",
 				"details": fiber.Map{
 					"error": err.Error(),
@@ -67,7 +69,7 @@ func (handler *MessageHandler) ScheduleMessage(c *fiber.Ctx) error {
 		handler.logger.Error().Err(err).Msg("failed to schedule message")
 		return c.Status(fiber.StatusBadRequest).JSON(
 			fiber.Map{
-				"code": fiber.StatusBadRequest,
+				"code":  fiber.StatusBadRequest,
 				"error": "failed to schedule message",
 				"details": fiber.Map{
 					"error": err.Error(),
@@ -76,12 +78,15 @@ func (handler *MessageHandler) ScheduleMessage(c *fiber.Ctx) error {
 		)
 	}
 
-	
 	return c.Status(fiber.StatusCreated).JSON(
 		fiber.Map{
-			"status": "ok",
+			"status":  "ok",
 			"message": "message scheduled",
 		},
 	)
 }
 
+func (handler *MessageHandler) UnsentMessages(c *fiber.Ctx) error {
+
+	return nil
+}

@@ -6,6 +6,7 @@ import (
 	"message-sender-bot/internal/models"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,8 +27,36 @@ func (r *MessageRepository) CreateMessage(ctx context.Context, message *models.M
 		return fmt.Errorf("failed to create message: %w", err)
 	}
 
-	if result.RowsAffected() ==  0 {
+	if result.RowsAffected() == 0 {
 		return fmt.Errorf("failed to create message: no rows affected")
 	}
 	return nil
+}
+
+func (r *MessageRepository) GetUnsentMessages(ctx context.Context, limit, offset int) ([]models.UnsentMessage, error) {
+	query := `
+			SELECT
+				m.id,
+				m.planned_date,
+				mt.name AS type_name,
+				m.text
+			FROM messages m
+			JOIN message_types mt ON m.type_id = mt.id
+			WHERE m.deleted_at IS NULL
+			  AND EXISTS (
+			      SELECT 1
+			      FROM message_deliveries md
+			      WHERE md.message_id = m.id AND md.is_sent = false
+			  )
+			ORDER BY m.planned_date DESC
+			LIMIT $1 OFFSET $2`
+	rows, err := r.dbPool.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	result, err := pgx.CollectRows(rows, pgx.RowToStructByName[models.UnsentMessage])
+	if err != nil {
+		return nil, fmt.Errorf("failed to collect rows: %w", err)
+	}
+	return result, nil
 }

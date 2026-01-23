@@ -11,3 +11,10 @@ type ScheduleMessageRequest struct {
 type MessageTypeRequest struct {
 	Name string `json:"name"`
 }
+
+type MessagesResponse struct {
+	PlannedDate time.Time `json:"planned_date"`
+	Type        string    `json:"type_name"`
+	Text        string    `json:"text"`
+	IsSent      bool      `json:"is_sent"`
+}

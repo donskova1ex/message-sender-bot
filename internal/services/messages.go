@@ -75,7 +75,7 @@ func (s *MessageService) validate(messageDto *dto.ScheduleMessageRequest) error 
 	}
 
 	if messageDto.TypeID <= 0 {
-		return custom_errors.EmtyOrNegativeTypeId
+		return custom_errors.EmptyOrNegativeTypeId
 	}
 
 	return nil

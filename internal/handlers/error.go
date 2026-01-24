@@ -58,7 +58,7 @@ func HandleError(err error) *ApiError {
 			Message: "empty message text",
 		}
 
-	case errors.Is(err, custom_errors.EmtyOrNegativeTypeId):
+	case errors.Is(err, custom_errors.EmptyOrNegativeTypeId):
 		return &ApiError{
 			Status:  fiber.StatusBadRequest,
 			Message: "empty or negative type_id",
@@ -69,6 +69,17 @@ func HandleError(err error) *ApiError {
 			Status:  fiber.StatusBadRequest,
 			Message: "user id is empty",
 		}
+	case errors.Is(err, custom_errors.MessageNotFoundError):
+		return &ApiError{
+			Status:  fiber.StatusNotFound,
+			Message: "message not found",
+		}
+	case errors.Is(err, custom_errors.FailedToCreateMessage):
+		return &ApiError{
+			Status:  fiber.StatusBadRequest,
+			Message: "failed to create message",
+		}
+
 	}
 
 	var pgErr *pgconn.PgError
@@ -82,8 +93,14 @@ func HandleError(err error) *ApiError {
 		case "23503":
 			return &ApiError{
 				Status:  fiber.StatusBadRequest,
-				Message: "invalid reference",
+				Message: "specified type does not exist",
 			}
+		case "42P01":
+			return &ApiError{
+				Status:  fiber.StatusInternalServerError,
+				Message: "something went wrong",
+			}
+
 		default:
 			return &ApiError{
 				Status:  fiber.StatusInternalServerError,

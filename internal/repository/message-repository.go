@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	custom_errors "message-sender-bot/internal/errors"
 )
 
 type MessageRepository struct {
@@ -28,7 +29,7 @@ func (r *MessageRepository) CreateMessage(ctx context.Context, message *models.M
 	}
 
 	if result.RowsAffected() == 0 {
-		return fmt.Errorf("failed to create message: no rows affected")
+		return custom_errors.FailedToCreateMessage
 	}
 	return nil
 }
@@ -59,4 +60,16 @@ func (r *MessageRepository) GetUnsentMessages(ctx context.Context, limit, offset
 		return nil, fmt.Errorf("failed to collect rows: %w", err)
 	}
 	return result, nil
+}
+
+func (r *MessageRepository) DeleteMessage(ctx context.Context, id int64) error {
+	query := `UPDATE messages SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL`
+	result, err := r.dbPool.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete message: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return custom_errors.MessageNotFoundError
+	}
+	return nil
 }

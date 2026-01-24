@@ -73,3 +73,6 @@ func (r *MessageRepository) DeleteMessage(ctx context.Context, id int64) error {
 	}
 	return nil
 }
+func (r *MessageRepository) UpdateMessage() {
+
+}

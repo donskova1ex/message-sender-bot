@@ -31,7 +31,6 @@ func NewMessageHandler(router fiber.Router, msgSvc *services.MessageService, jwt
 	api.Get("/health", handler.healthCheck)
 
 	protected := api.Group("", jwtMiddleware)
-	protected.Get("/test", handler.Test)
 	protected.Post("/scheduled-messages", handler.ScheduleMessage)
 	protected.Get("/scheduled-messages", handler.UnsentMessages)
 	return handler
@@ -42,15 +41,6 @@ func (handler *MessageHandler) healthCheck(c *fiber.Ctx) error {
 		fiber.Map{
 			"status": "ok",
 			"uptime": time.Since(handler.StartTime).String(),
-		})
-}
-
-func (handler *MessageHandler) Test(c *fiber.Ctx) error {
-	userId := c.Locals("user_id").(int64)
-	return c.Status(fiber.StatusOK).JSON(
-		fiber.Map{
-			"status":  "ok",
-			"user_id": userId,
 		})
 }
 
@@ -67,10 +57,15 @@ func (handler *MessageHandler) ScheduleMessage(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(
-		fiber.Map{
-			"status":  "ok",
-			"message": "message scheduled",
+		dto.Response{
+			Status:       "ok",
+			Message:      "message scheduled successfully",
+			ResponseDate: time.Now(),
 		},
+		//fiber.Map{
+		//	"status":  "ok",
+		//	"message": "message scheduled",
+		//},
 	)
 }
 
@@ -81,10 +76,16 @@ func (handler *MessageHandler) UnsentMessages(c *fiber.Ctx) error {
 		handler.logger.Error().Err(err).Msg("failed to get unsent messages")
 		return HandleError(err).Send(c)
 	}
-	return c.Status(fiber.StatusCreated).JSON(
-		fiber.Map{
-			"status":  "ok",
-			"message": unsentMessages,
+	return c.Status(fiber.StatusOK).JSON(
+		//fiber.Map{
+		//	"status":  "ok",
+		//	"message": unsentMessages,
+		//},
+		dto.Response{
+			Status:       "ok",
+			Message:      "unsent messages get successfully",
+			Data:         unsentMessages,
+			ResponseDate: time.Now(),
 		},
 	)
 }

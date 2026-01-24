@@ -46,6 +46,7 @@ func (s *MessageService) GetUnsentMessages(ctx context.Context, limit, offset in
 	modelSlice := make([]*dto.MessagesResponse, len(modelsMessages))
 	for i, model := range modelsMessages {
 		modelSlice[i] = &dto.MessagesResponse{
+			ID:          model.ID,
 			PlannedDate: model.PlannedDate,
 			Type:        model.TypeName,
 			Text:        model.Text,

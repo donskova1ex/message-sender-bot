@@ -20,15 +20,15 @@ type loginRequest struct {
 }
 
 func NewAuthHandler(
-    router fiber.Router,
-    authSvc *services.AuthService,
-    logger *zerolog.Logger,
+	router fiber.Router,
+	authSvc *services.AuthService,
+	logger *zerolog.Logger,
 ) *AuthHandler {
-    handler := &AuthHandler{authSvc: authSvc, logger: logger}
-    authGroup := router.Group("/api/v1/auth")
-    authGroup.Post("/register", handler.Register)
-    authGroup.Post("/login", handler.Login)
-    return handler
+	handler := &AuthHandler{authSvc: authSvc, logger: logger}
+	authGroup := router.Group("/api/v1/auth")
+	authGroup.Post("/register", handler.Register)
+	authGroup.Post("/login", handler.Login)
+	return handler
 }
 
 type registerRequest struct {
@@ -47,10 +47,8 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	if err != nil {
 		h.logger.Warn().Err(err).Str("email", req.Email).Msg("Registration failed")
 		if strings.Contains(err.Error(), "email already registered") {
-			//return c.Status(http.StatusConflict).JSON(fiber.Map{"error": "email already registered"})
 			return HandleError(err).Send(c)
 		}
-		//return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 		return HandleError(err).Send(c)
 	}
 
@@ -70,7 +68,6 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	token, err := h.authSvc.Login(c.Context(), req.Email, req.Password)
 	if err != nil {
 		h.logger.Warn().Str("email", req.Email).Msg("Login failed")
-		//return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 		return HandleError(err).Send(c)
 	}
 

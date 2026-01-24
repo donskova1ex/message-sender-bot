@@ -22,7 +22,7 @@ func LoggerMiddleware(app *fiber.App, logger *zerolog.Logger) {
 		fiberzerolog.New(
 			fiberzerolog.Config{
 				Logger: logger,
-				Next: isHealthCheck,
+				Next:   isHealthCheck,
 			},
 		),
 	)
@@ -70,17 +70,26 @@ func JWTAuth(jwtSvc *services.JWTService) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing Authorization header"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"code":  fiber.StatusUnauthorized,
+				"error": "missing Authorization header",
+			})
 		}
 
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 		if tokenStr == authHeader {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid Authorization format"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"code":  fiber.StatusUnauthorized,
+				"error": "invalid Authorization format",
+			})
 		}
 
 		claims, err := jwtSvc.ValidateToken(tokenStr)
 		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid or expired token"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"code":  fiber.StatusUnauthorized,
+				"error": "invalid or expired token",
+			})
 		}
 
 		c.Locals("user_id", claims.UserID)

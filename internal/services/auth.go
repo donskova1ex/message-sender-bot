@@ -2,11 +2,12 @@ package services
 
 import (
 	"context"
-	"errors"
 	"message-sender-bot/internal/repository"
 	"regexp"
 	"strings"
 	"unicode"
+
+	custom_errors "message-sender-bot/internal/errors"
 
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
@@ -58,10 +59,10 @@ func (a *AuthService) Register(ctx context.Context, email, password string) (str
 	email = strings.TrimSpace(email)
 	password = strings.TrimSpace(password)
 	if !isValidEmail(email) {
-		return "", errors.New("invalid email")
+		return "", custom_errors.InvalidEmailError
 	}
 	if !isValidPassword(password) {
-		return "", errors.New("Invalid password. Password must be at least 8 characters and contain uppercase, lowercase, and digit")
+		return "", custom_errors.InvalidPasswordError
 	}
 
 	user, err := a.userRepository.CreateUser(ctx, email, password)
@@ -78,11 +79,11 @@ func (a *AuthService) Register(ctx context.Context, email, password string) (str
 func (a *AuthService) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := a.userRepository.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", errors.New("invalid credentials")
+		return "", custom_errors.InvalidCredentials
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return "", errors.New("invalid credentials")
+		return "", custom_errors.InvalidCredentials
 	}
 	return a.jwtService.GenerateToken(user.ID)
 }

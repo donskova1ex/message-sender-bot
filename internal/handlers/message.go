@@ -59,27 +59,29 @@ func (handler *MessageHandler) ScheduleMessage(c *fiber.Ctx) error {
 	messageDto := &dto.ScheduleMessageRequest{}
 	if err := c.BodyParser(messageDto); err != nil {
 		handler.logger.Error().Err(err).Msg("failed to parse schedule message request body")
-		return c.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"code":  fiber.StatusBadRequest,
-				"error": "invalid request body",
-				"details": fiber.Map{
-					"error": err.Error(),
-				},
-			},
-		)
+		// return c.Status(fiber.StatusBadRequest).JSON(
+		// 	fiber.Map{
+		// 		"code":  fiber.StatusBadRequest,
+		// 		"error": "invalid request body",
+		// 		"details": fiber.Map{
+		// 			"error": err.Error(),
+		// 		},
+		// 	},
+		// )
+		return HandleError(err).Send(c)
 	}
 	if err := handler.msgSvc.ScheduleMessage(c.Context(), messageDto, userId); err != nil {
 		handler.logger.Error().Err(err).Msg("failed to schedule message")
-		return c.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"code":  fiber.StatusBadRequest,
-				"error": "failed to schedule message",
-				"details": fiber.Map{
-					"error": err.Error(),
-				},
-			},
-		)
+		// return c.Status(fiber.StatusBadRequest).JSON(
+		// 	fiber.Map{
+		// 		"code":  fiber.StatusBadRequest,
+		// 		"error": "failed to schedule message",
+		// 		"details": fiber.Map{
+		// 			"error": err.Error(),
+		// 		},
+		// 	},
+		// )
+		return HandleError(err).Send(c)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(
@@ -95,15 +97,17 @@ func (handler *MessageHandler) UnsentMessages(c *fiber.Ctx) error {
 	unsentMessages, err := handler.msgSvc.GetUnsentMessages(c.Context(), PAGE_ITEMS, (page-1)*PAGE_ITEMS)
 	if err != nil {
 		handler.logger.Error().Err(err).Msg("failed to get unsent messages")
-		return c.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"code":  fiber.StatusBadRequest,
-				"error": "failed to get unsent messages",
-				"details": fiber.Map{
-					"error": err.Error(),
-				},
-			},
-		)
+		// return c.Status(fiber.StatusBadRequest).JSON(
+		// 	fiber.Map{
+		// 		"code":  fiber.StatusBadRequest,
+		// 		"error": "failed to get unsent messages",
+		// 		"details": fiber.Map{
+		// 			"error": err.Error(),
+		// 		},
+		// 	},
+		// )
+
+		return HandleError(err).Send(c)
 	}
 	return c.Status(fiber.StatusCreated).JSON(
 		fiber.Map{

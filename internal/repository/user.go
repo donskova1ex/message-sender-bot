@@ -15,8 +15,8 @@ type UserRepository struct {
 	db *pgxpool.Pool
 }
 type User struct {
-	ID       int64
-	Email    string
+	ID           int64
+	Email        string
 	PasswordHash string
 }
 
@@ -41,9 +41,9 @@ func (r *UserRepository) CreateUser(ctx context.Context, email, password string)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, fmt.Errorf("user with email %s already exists", email)
+			return nil, err
 		}
-		return nil, fmt.Errorf("failed to insert user: %w", err)
+		return nil, err
 	}
 	return user, nil
 }
@@ -58,9 +58,9 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*Use
 	err := r.db.QueryRow(ctx, query, email).Scan(&user.ID, &user.Email, &user.PasswordHash)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("user with email %s not found", email)
-		} 
-		return nil, fmt.Errorf("failed to get user by email: %w", err)
+			return nil, err
+		}
+		return nil, err
 	}
 	return user, nil
 }

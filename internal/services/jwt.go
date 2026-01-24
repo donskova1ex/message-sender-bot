@@ -1,8 +1,9 @@
 package services
 
 import (
-	"errors"
 	"time"
+
+	custom_errors "message-sender-bot/internal/errors"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -40,7 +41,7 @@ func (j *JWTService) GenerateToken(userID int64) (string, error) {
 func (j *JWTService) ValidateToken(tokenStr string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
+			return nil, custom_errors.InvalidSingingMethod
 		}
 		return j.secret, nil
 	})
@@ -52,5 +53,5 @@ func (j *JWTService) ValidateToken(tokenStr string) (*Claims, error) {
 		return claims, nil
 	}
 
-	return nil, errors.New("invalid token")
+	return nil, custom_errors.InvalidTokenError
 }

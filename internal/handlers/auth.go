@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"net/http"
 	"strings"
 
 	"message-sender-bot/internal/services"
@@ -40,16 +39,19 @@ type registerRequest struct {
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req registerRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid json"})
+		//return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid json"})
+		return HandleError(err).Send(c)
 	}
 
 	token, err := h.authSvc.Register(c.Context(), req.Email, req.Password)
 	if err != nil {
 		h.logger.Warn().Err(err).Str("email", req.Email).Msg("Registration failed")
 		if strings.Contains(err.Error(), "email already registered") {
-			return c.Status(http.StatusConflict).JSON(fiber.Map{"error": "email already registered"})
+			//return c.Status(http.StatusConflict).JSON(fiber.Map{"error": "email already registered"})
+			return HandleError(err).Send(c)
 		}
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		//return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return HandleError(err).Send(c)
 	}
 
 	return c.JSON(fiber.Map{
@@ -61,13 +63,15 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req loginRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid json"})
+		//return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid json"})
+		return HandleError(err).Send(c)
 	}
 
 	token, err := h.authSvc.Login(c.Context(), req.Email, req.Password)
 	if err != nil {
 		h.logger.Warn().Str("email", req.Email).Msg("Login failed")
-		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
+		//return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
+		return HandleError(err).Send(c)
 	}
 
 	return c.JSON(fiber.Map{

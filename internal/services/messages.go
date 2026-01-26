@@ -56,6 +56,14 @@ func (s *MessageService) GetUnsentMessages(ctx context.Context, limit, offset in
 	return modelSlice, nil
 }
 
+func (s *MessageService) DeleteMessage(ctx context.Context, msgId int64) error {
+	err := s.msgRepo.DeleteMessage(ctx, msgId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *MessageService) messageRequestDtoToMessageModel(msgDto *dto.ScheduleMessageRequest, userId int64) *models.Message {
 	msgModel := &models.Message{
 		UserID:      userId,

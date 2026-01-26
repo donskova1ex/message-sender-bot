@@ -17,3 +17,11 @@ type UnsentMessage struct {
 	TypeName    string    `db:"type_name"`
 	Text        string    `db:"text"`
 }
+
+type DeletedMessage struct {
+	ID          int64     `db:"id"`
+	PlannedDate time.Time `db:"planned_date"`
+	TypeName    string    `db:"type_name"`
+	Text        string    `db:"text"`
+	DeletedAt   time.Time `db:"deleted_at"`
+}

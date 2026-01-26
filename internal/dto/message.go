@@ -18,6 +18,12 @@ type MessageTypeRequest struct {
 	Name string `json:"name"`
 }
 
+type UpdateMessageRequest struct {
+	PlannedDate *time.Time `json:"planned_date,omitempty"`
+	TypeID      *int64     `json:"type_id,omitempty"`
+	Text        *string    `json:"text,omitempty"`
+}
+
 type MessagesResponse struct {
 	ID          int64     `json:"id"`
 	PlannedDate time.Time `json:"planned_date"`

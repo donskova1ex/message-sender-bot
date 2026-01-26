@@ -6,9 +6,10 @@ import (
 	"message-sender-bot/internal/models"
 	"time"
 
+	custom_errors "message-sender-bot/internal/errors"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	custom_errors "message-sender-bot/internal/errors"
 )
 
 type MessageRepository struct {
@@ -40,7 +41,7 @@ func (r *MessageRepository) GetUnsentMessages(ctx context.Context, limit, offset
 				m.id,
 				m.planned_date,
 				mt.type_name,
-				m.text
+				m.text,
 			FROM messages m
 					 JOIN message_types mt ON m.type_id = mt.id
 			WHERE m.deleted_at IS NULL
@@ -73,6 +74,46 @@ func (r *MessageRepository) DeleteMessage(ctx context.Context, id int64) error {
 	}
 	return nil
 }
-func (r *MessageRepository) UpdateMessage() {
+func (r *MessageRepository) UpdateMessage(ctx context.Context, plannedDate *time.Time, typeId *int64, text *string, id int64) error {
+	query := `UPDATE messages 
+				SET 
+				  planned_date = COALESCE($1, planned_date),
+				  type_id = COALESCE($2, type_id),
+				  text = COALESCE($3, text),
+				  updated_at = NOW()
+				WHERE 
+				  id = $4 
+				  AND deleted_at IS NULL`
+	result, err := r.dbPool.Exec(ctx, query, plannedDate, typeId, text, id)
+	if err != nil {
+		return fmt.Errorf("failed to update message: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return custom_errors.MessageNotFoundError
+	}
+	return nil
+}
 
+func (r *MessageRepository) GetDeletedMessages(ctx context.Context, limit, offset int) ([]models.DeletedMessage, error) {
+	query := `SELECT
+					m.id,
+					m.planned_date,
+					mt.type_name,
+					m.text,
+					m.deleted_at
+				FROM messages m
+				JOIN message_types mt ON m.type_id = mt.id
+				WHERE m.deleted_at IS NOT NULL
+				ORDER BY m.deleted_at DESC
+				LIMIT $1 OFFSET $2`
+
+	rows, err := r.dbPool.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	result, err := pgx.CollectRows(rows, pgx.RowToStructByName[models.DeletedMessage])
+	if err != nil {
+		return nil, fmt.Errorf("failed to collect rows: %w", err)
+	}
+	return result, nil
 }

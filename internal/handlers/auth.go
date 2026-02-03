@@ -39,7 +39,6 @@ type registerRequest struct {
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req registerRequest
 	if err := c.BodyParser(&req); err != nil {
-		//return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid json"})
 		return HandleError(err).Send(c)
 	}
 
@@ -61,7 +60,6 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req loginRequest
 	if err := c.BodyParser(&req); err != nil {
-		//return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid json"})
 		return HandleError(err).Send(c)
 	}
 

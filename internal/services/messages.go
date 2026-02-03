@@ -64,6 +64,22 @@ func (s *MessageService) DeleteMessage(ctx context.Context, msgId int64) error {
 	return nil
 }
 
+func (s *MessageService) UpdateMessage(ctx context.Context, messageDto *dto.UpdateMessageRequest, msgId int64, userId int64) error {
+	if messageDto.PlannedDate == nil && messageDto.Text == nil && messageDto.TypeID == nil {
+		return custom_errors.EmptyUpdateMessageError
+	}
+	msg, err := s.msgRepo.GetMessageByID(ctx, msgId)
+	if err != nil {
+		return err
+	}
+	if messageDto.PlannedDate.Before(msg.PlannedDate) {
+		return custom_errors.NewPlannedDateBeforeError
+	}
+	//Todo: add update message
+	return nil
+}
+
+
 func (s *MessageService) messageRequestDtoToMessageModel(msgDto *dto.ScheduleMessageRequest, userId int64) *models.Message {
 	msgModel := &models.Message{
 		UserID:      userId,

@@ -9,6 +9,8 @@ type Message struct {
 	TypeID      int64     `db:"type_id"`
 	Text        string    `db:"text"`
 	CreatedAt   time.Time `db:"created_at"`
+	DeletedAt   time.Time `db:"deleted_at"`
+	UpdatedAt   time.Time `db:"updated_at"`
 }
 
 type UnsentMessage struct {

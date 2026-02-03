@@ -15,4 +15,6 @@ var (
 	InvalidSingingMethod  = errors.New("unexpected signing method")
 	MessageNotFoundError  = errors.New("message not found")
 	FailedToCreateMessage = errors.New("failed to create message")
+	EmptyUpdateMessageError = errors.New("empty update message")
+	NewPlannedDateBeforeError = errors.New("new planned date is before current planned date")
 )

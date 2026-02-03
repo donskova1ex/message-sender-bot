@@ -79,7 +79,16 @@ func HandleError(err error) *ApiError {
 			Status:  fiber.StatusBadRequest,
 			Message: "failed to create message",
 		}
-
+	case errors.Is(err, custom_errors.EmptyUpdateMessageError):
+		return &ApiError{
+			Status: fiber.StatusBadRequest,
+			Message: "empty update message",
+		}
+	case errors.Is(err, custom_errors.NewPlannedDateBeforeError):
+		return &ApiError{
+			Status:  fiber.StatusBadRequest,
+			Message: "new planned date is before current date",
+		}
 	}
 
 	var pgErr *pgconn.PgError
@@ -100,7 +109,6 @@ func HandleError(err error) *ApiError {
 				Status:  fiber.StatusInternalServerError,
 				Message: "something went wrong",
 			}
-
 		default:
 			return &ApiError{
 				Status:  fiber.StatusInternalServerError,

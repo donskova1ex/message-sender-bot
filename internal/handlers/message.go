@@ -62,10 +62,6 @@ func (handler *MessageHandler) ScheduleMessage(c *fiber.Ctx) error {
 			Message:      "message scheduled successfully",
 			ResponseDate: time.Now(),
 		},
-		//fiber.Map{
-		//	"status":  "ok",
-		//	"message": "message scheduled",
-		//},
 	)
 }
 
@@ -77,10 +73,6 @@ func (handler *MessageHandler) UnsentMessages(c *fiber.Ctx) error {
 		return HandleError(err).Send(c)
 	}
 	return c.Status(fiber.StatusOK).JSON(
-		//fiber.Map{
-		//	"status":  "ok",
-		//	"message": unsentMessages,
-		//},
 		dto.Response{
 			Status:       "ok",
 			Message:      "unsent messages get successfully",
